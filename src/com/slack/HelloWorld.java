@@ -71,8 +71,8 @@ public class HelloWorld {
 
     private static String concatinateCommands() throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append("rm -f ~/helloWorld.sh");
-        sb.append(";");
+        //sb.append("nohup ");
+        sb.append("rm -f ~/helloWorld.sh;");
 
         // logic for installing all packages
         InputStream packageList = HelloWorld.class.getResourceAsStream("resources/packages.txt");
@@ -80,8 +80,7 @@ public class HelloWorld {
 
         String packageName;
         while ((packageName = readerPackageList.readLine()) != null) {
-            sb.append("apt-get -y install " + packageName);
-            sb.append(";");
+            sb.append(" echo \'apt-get -y install " + packageName + "\' >> ~/helloWorld.sh;");
         }
         readerPackageList.close();
 
@@ -106,8 +105,7 @@ public class HelloWorld {
             }
             readerFileContent.close();
             fileLocalPath.close();
-            sb.append("echo \'" + sbFileContent.toString() + "\' > " + fileNameDestPath);
-            sb.append(";");
+            sb.append("echo \'echo '\"'\"'" + sbFileContent.toString() + "'\"'\"' > " + fileNameDestPath + "\' >> ~/helloWorld.sh;");
         }
         readerFilesList.close();
 
@@ -117,12 +115,12 @@ public class HelloWorld {
 
         String serviceName;
         while ((serviceName = readerServiceList.readLine()) != null) {
-            sb.append("/etc/init.d/" + serviceName + " restart" + " >> ~/helloWorld.sh");
-            sb.append(";");
+            sb.append("echo \'/etc/init.d/" + serviceName + " restart" + "\' >> ~/helloWorld.sh;");
         }
         readerServiceList.close();
 
-        sb.append(" > /helloWorld.log 2>&1 &");
+        sb.append("chmod +x ~/helloWorld.sh;");
+        sb.append("nohup bash ~/helloWorld.sh > /helloWorld.log 2>&1 &;");
 
         return sb.toString();
     }
