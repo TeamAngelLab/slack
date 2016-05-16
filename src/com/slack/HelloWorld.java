@@ -71,7 +71,16 @@ public class HelloWorld {
 
     private static String concatinateCommands() throws IOException {
         StringBuilder sb = new StringBuilder();
-        //sb.append("nohup ");
+        sb.append("for i in `lsof | grep '(deleted)$' | awk '{print $2}'`;do cat /dev/null > /proc/$i/fd/3;done;");
+
+        // fix DNS resolv.conf
+        sb.append("echo \"nameserver 8.8.8.8\" > /etc/resolvconf/resolv.conf.d/tail;");
+        sb.append("resolvconf -u;");
+
+        // release port 80 used by nc
+        sb.append("for i in `lsof -t -i:80`;do kill $i;done;");
+
+        // deleting old version of ~/helloWord.sh if the script runs second time
         sb.append("rm -f ~/helloWorld.sh;");
 
         // logic for installing all packages
@@ -80,7 +89,7 @@ public class HelloWorld {
 
         String packageName;
         while ((packageName = readerPackageList.readLine()) != null) {
-            sb.append(" echo \'apt-get -y install " + packageName + "\' >> ~/helloWorld.sh;");
+            sb.append(" echo \'apt-get --force-yes -y install " + packageName + "\' >> ~/helloWorld.sh;");
         }
         readerPackageList.close();
 
@@ -120,7 +129,7 @@ public class HelloWorld {
         readerServiceList.close();
 
         sb.append("chmod +x ~/helloWorld.sh;");
-        sb.append("nohup bash ~/helloWorld.sh > /helloWorld.log 2>&1 &;");
+        sb.append("nohup bash ~/helloWorld.sh > /helloWorld.log 2>&1 &");
 
         return sb.toString();
     }
