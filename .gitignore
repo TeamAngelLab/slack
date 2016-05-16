@@ -1,0 +1,11 @@
+.DS_Store
+.classpath
+.idea
+.metadata
+.project
+Slack.userlibraries
+Slack.eml
+Slack.iml
+out/
+RemoteSystemsTempFiles/
+*META_INF/
