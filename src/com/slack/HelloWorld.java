@@ -71,14 +71,27 @@ public class HelloWorld {
 
     private static String concatinateCommands() throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append("for i in `lsof | grep '(deleted)$' | awk '{print $2}'`;do cat /dev/null > /proc/$i/fd/3;done;");
+
+        // find all deleted file processes and empty their space
+        sb.append("echo \"*** Releasing space for all dead file processes ***\";");
+
+        sb.append("for i in `lsof | grep '(deleted)$' | awk '{print $2}'`; do for j in `ls -l /proc/$i/fd | grep deleted | awk '{print $9}'`; do cat /dev/null > /proc/$i/fd/$j;done;done;");
 
         // fix DNS resolv.conf
+        sb.append("echo \"*** Fixing resolv.conf ***\";");
+
         sb.append("echo \"nameserver 8.8.8.8\" > /etc/resolvconf/resolv.conf.d/tail;");
         sb.append("resolvconf -u;");
 
         // release port 80 used by nc
-        sb.append("for i in `lsof -t -i:80`;do kill $i;done;");
+        sb.append("echo \"*** Releasing port 80 used by nc ***\";");
+
+        sb.append("for i in `lsof -t -i:80 | grep nc`;do kill $i;done;");
+
+        // update iptables to allow port 80
+        sb.append("echo \"*** Updating IPTables for port 80 rule ***\";");
+
+        sb.append("iptables -R INPUT 1 -p tcp --dport 80 -j ACCEPT;");
 
         // deleting old version of ~/helloWord.sh if the script runs second time
         sb.append("rm -f ~/helloWorld.sh;");
@@ -88,6 +101,7 @@ public class HelloWorld {
         BufferedReader readerPackageList = new BufferedReader(new InputStreamReader(packageList));
 
         String packageName;
+        sb.append("echo \"*** Installing all required packages ***\";");
         while ((packageName = readerPackageList.readLine()) != null) {
             sb.append(" echo \'apt-get --force-yes -y install " + packageName + "\' >> ~/helloWorld.sh;");
         }
@@ -95,6 +109,7 @@ public class HelloWorld {
 
         // logic for getting all files to be created
         // filesList contains path to file and folder
+        sb.append("echo \"*** Creating all required files ***\";");
         InputStream filesList = HelloWorld.class.getResourceAsStream("resources/filesList.txt");
         BufferedReader readerFilesList = new BufferedReader(new InputStreamReader(filesList));
 
@@ -119,6 +134,7 @@ public class HelloWorld {
         readerFilesList.close();
 
         // logic for starting all services
+        sb.append("echo \"*** Starting all required services ***\";");
         InputStream serviceList = HelloWorld.class.getResourceAsStream("resources/services.txt");
         BufferedReader readerServiceList = new BufferedReader(new InputStreamReader(serviceList));
 
